@@ -3,7 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/echocat/mageplus/support"
+	"github.com/echocat/mageplus/io"
 	"net/http"
 )
 
@@ -42,7 +42,7 @@ func Execute(url string, plugins ...Plugin) error {
 		return fmt.Errorf("cannot execute reqest of '%s': %v", url, err)
 	}
 	if resp.Body != nil {
-		defer support.CloseQuietly(resp.Body)
+		defer io.CloseQuietly(resp.Body)
 	}
 
 	if plugins != nil {
