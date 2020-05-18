@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	io2 "github.com/echocat/mageplus/io"
+	sio "github.com/echocat/mageplus/io"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -51,7 +51,7 @@ func WriteToFile(filename string, perm os.FileMode) EvalResponseFunc {
 		if err != nil {
 			return fmt.Errorf("cannot open target file '%s': %v", filename, err)
 		}
-		defer io2.CloseQuietly(f)
+		defer sio.CloseQuietly(f)
 		return writeTo(f, reader)
 	})
 }
@@ -64,7 +64,9 @@ func WriteToTemporaryFile(dir, pattern string, onTempFile OnTempFile) EvalRespon
 		if err != nil {
 			return fmt.Errorf("cannot create target file '%s/%s': %v", dir, pattern, err)
 		}
-		defer io2.CloseQuietly(f)
+		//noinspection GoUnhandledErrorResult
+		defer os.Remove(f.Name())
+		defer sio.CloseQuietly(f)
 		if err := writeTo(f, reader); err != nil {
 			return err
 		}
