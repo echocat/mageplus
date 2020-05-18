@@ -12,3 +12,33 @@ func Touch(filename string, perm os.FileMode) error {
 	}
 	return f.Close()
 }
+
+func Exists(filename string) (bool, error) {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return false, nil
+	} else if err != nil {
+		return false, fmt.Errorf("cannot get information if file '%s': %v", filename, err)
+	} else {
+		return true, nil
+	}
+}
+
+func DirExists(filename string) (bool, error) {
+	if fi, err := os.Stat(filename); os.IsNotExist(err) {
+		return false, nil
+	} else if err != nil {
+		return false, fmt.Errorf("cannot get information if file '%s': %v", filename, err)
+	} else {
+		return fi.IsDir(), nil
+	}
+}
+
+func FileExists(filename string) (bool, error) {
+	if fi, err := os.Stat(filename); os.IsNotExist(err) {
+		return false, nil
+	} else if err != nil {
+		return false, fmt.Errorf("cannot get information if file '%s': %v", filename, err)
+	} else {
+		return !fi.IsDir(), nil
+	}
+}
