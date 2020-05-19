@@ -70,6 +70,11 @@ func WriteToTemporaryFile(dir, pattern string, onTempFile OnTempFile) EvalRespon
 		if err := writeTo(f, reader); err != nil {
 			return err
 		}
+
+		if _, err := f.Seek(0, 0); err != nil {
+			return fmt.Errorf("cannot reset back to start of file '%s': %v", f.Name(), err)
+		}
+
 		return onTempFile(f)
 	})
 }

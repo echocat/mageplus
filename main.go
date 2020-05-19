@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/magefile/mage/mage"
+	"github.com/echocat/mageplus/mageplus"
 	"os"
 )
 
 func main() {
-	os.Exit(mage.Main())
+	os.Exit(mageplus.Main())
 }
