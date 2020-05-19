@@ -111,7 +111,7 @@ func Release() (err error) {
 			sh.RunV("git", "push", "--delete", "origin", version)
 		}
 	}()
-	return sh.RunV("goreleaser")
+	return sh.RunV("goreleaser", "--rm-dist")
 }
 
 func downloadDependency() error {
