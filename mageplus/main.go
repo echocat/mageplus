@@ -43,4 +43,4 @@ func resolveDotEnvFiles() ([]string, error) {
 	return result, nil
 }
 
-var DotEnvFilesCandidates = []string{".env", ".env.build", ".env.mage", ".env.example"}
+var DotEnvFilesCandidates = []string{".env.mage", ".env.build", ".env", ".env.example"}
