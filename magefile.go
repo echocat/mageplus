@@ -158,7 +158,7 @@ func GenerateWrapperSources() error {
 		"func init() {\n"+
 		"\tunixScript = `%s`\n"+
 		"\twindowsScript = `%s`\n"+
-		"}\n\n", string(wf), string(wcf),
+		"}\n", string(wf), string(wcf),
 	)), 0644); err != nil {
 		return err
 	}
