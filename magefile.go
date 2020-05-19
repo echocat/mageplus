@@ -42,10 +42,7 @@ var (
 )
 
 func GenerateSources() error {
-	if err := generateWrapperSources(); err != nil {
-		return err
-	}
-
+	mg.Deps(GenerateWrapperSources)
 	return nil
 }
 
@@ -146,19 +143,18 @@ func hash() string {
 	return hash
 }
 
-func generateWrapperSources() error {
+func GenerateWrapperSources() error {
 	wf, err := ioutil.ReadFile("wrapper/mageplusw")
 	if err != nil {
 		return err
 	}
-	wf = []byte(strings.ReplaceAll(string(wf), "####VERSION####", version))
 
 	wcf, err := ioutil.ReadFile("wrapper/mageplusw.cmd")
 	if err != nil {
 		return err
 	}
 
-	if err := ioutil.WriteFile("wrapper/resources_tmp.go", []byte(fmt.Sprintf("package wrapper\n\n"+
+	if err := ioutil.WriteFile("wrapper/resources.go", []byte(fmt.Sprintf("package wrapper\n\n"+
 		"func init() {\n"+
 		"\tunixScript = `%s`\n"+
 		"\twindowsScript = `%s`\n"+

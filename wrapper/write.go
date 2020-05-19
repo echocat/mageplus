@@ -15,7 +15,7 @@ var (
 func Write(targetDir string, version string) error {
 	//noinspection GoBoolExpressions
 	if unixScript == "" || windowsScript == "" {
-		panic("unixScript and/or windowsScript are still empty. resources_tmp.go not generated before building?")
+		panic("unixScript and/or windowsScript are still empty. resources.go not generated before building?")
 	}
 	unixScriptFile := filepath.Join(targetDir, "mageplusw")
 	windowsScriptFile := filepath.Join(targetDir, "mageplusw.cmd")
