@@ -99,18 +99,18 @@ func Release() (err error) {
 		return err
 	}
 
-	//if err := sh.RunV("git", "tag", "-a", tag, "-m", tag); err != nil {
-	//	return err
-	//}
-	//if err := sh.RunV("git", "push", "origin", tag); err != nil {
-	//	return err
-	//}
-	//defer func() {
-	//	if err != nil {
-	//		sh.RunV("git", "tag", "--delete", tag)
-	//		sh.RunV("git", "push", "--delete", "origin", tag)
-	//	}
-	//}()
+	if err := sh.RunV("git", "tag", "-a", version, "-m", version); err != nil {
+		return err
+	}
+	if err := sh.RunV("git", "push", "origin", version); err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			sh.RunV("git", "tag", "--delete", version)
+			sh.RunV("git", "push", "--delete", "origin", version)
+		}
+	}()
 	return sh.RunV("goreleaser")
 }
 
