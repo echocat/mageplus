@@ -49,8 +49,6 @@ func GenerateSources() error {
 
 // Runs "go install" for mage.  This generates the version info the binary.
 func Install() error {
-	return sh.RunV("go", "env")
-
 	mg.Deps(GenerateSources)
 
 	name := "mageplus"
