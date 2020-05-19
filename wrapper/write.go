@@ -51,6 +51,9 @@ func prepareContent(rawBase64EncodedContent string, version string, crlf bool) (
 	if b, err := base64.RawURLEncoding.DecodeString(rawBase64EncodedContent); err != nil {
 		return nil, err
 	} else {
+		if strings.HasPrefix(version, "v") {
+			version = version[1:]
+		}
 		content := strings.Replace(string(b), "####VERSION####", version, -1)
 		if crlf {
 			content = strings.ReplaceAll(content, "\n", "\r\n")
