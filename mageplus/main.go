@@ -1,6 +1,7 @@
 package mageplus
 
 import (
+	mio "github.com/echocat/mageplus/io"
 	"github.com/joho/godotenv"
 	"github.com/magefile/mage/mage"
 	"io"
@@ -19,10 +20,27 @@ func Main() int {
 // files in the given directory with the given args (do not include the command
 // name in the args).
 func ParseAndRun(stdout, stderr io.Writer, stdin io.Reader, args []string) int {
-	if err := godotenv.Load(".env", ".env.build", ".env.mage", ".env.example"); err != nil {
-		errlog := log.New(stderr, "", 0)
-		errlog.Println("Error:", err)
+	errLog := log.New(stderr, "", 0)
+	if files, err := resolveDotEnvFiles(); err != nil {
+		errLog.Println("Error:", err)
+		return 2
+	} else if err := godotenv.Load(files...); err != nil {
+		errLog.Println("Error:", err)
 		return 2
 	}
 	return mage.ParseAndRun(stdout, stderr, stdin, args)
 }
+
+func resolveDotEnvFiles() ([]string, error) {
+	var result []string
+	for _, candidate := range DotEnvFilesCandidates {
+		if exist, err := mio.FileExists(candidate); err != nil {
+			return nil, err
+		} else if exist {
+			result = append(result, candidate)
+		}
+	}
+	return result, nil
+}
+
+var DotEnvFilesCandidates = []string{".env", ".env.build", ".env.mage", ".env.example"}
