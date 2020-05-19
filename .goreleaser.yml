@@ -28,7 +28,7 @@ build:
   env:
     - CGO_ENABLED=0
 archives:
-  - name_template: "{{.Binary}}_{{.Version}}_{{.Os}}-{{.Arch}}"
+  - name_template: "{{.ProjectName }}_{{.Version}}_{{.Os}}-{{.Arch}}"
     replacements:
       amd64: 64bit
       386: 32bit
