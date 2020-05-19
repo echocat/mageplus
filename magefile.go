@@ -7,6 +7,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -165,12 +166,11 @@ func GenerateWrapperSources() error {
 		"func init() {\n"+
 		"\tunixScript = `%s`\n"+
 		"\twindowsScript = `%s`\n"+
-		"}\n", string(wf), string(wcf),
+		"}\n", base64.RawURLEncoding.EncodeToString(wf), base64.RawURLEncoding.EncodeToString(wcf),
 	))
 	if bytes.Equal(currentContent, newContent) {
 		return nil
 	}
-	errLog.Printf("%v, %v", len(currentContent), len(newContent))
 
 	if err := ioutil.WriteFile("wrapper/resources.go", newContent, 0644); err != nil {
 		return err

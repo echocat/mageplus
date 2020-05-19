@@ -6,6 +6,7 @@ import (
 	"fmt"
 	mio "github.com/echocat/mageplus/io"
 	"github.com/echocat/mageplus/sdk"
+	"github.com/echocat/mageplus/values"
 	"github.com/echocat/mageplus/wrapper"
 	"github.com/joho/godotenv"
 	"github.com/magefile/mage/mage"
@@ -95,11 +96,7 @@ func ParseAndRun(stdout, stderr io.Writer, stdin io.Reader, args []string) int {
 		version := gitTag
 		//noinspection GoBoolExpressions
 		if version == notSet {
-			if len(inv.Args) < 1 {
-				errlog.Println("Error:", "version of wrapper required as argument")
-				return 1
-			}
-			version = inv.Args[0]
+			version = values.RequireValue("MAGEPLUS_VERSION")
 		}
 		if err := wrapper.Write(inv.Dir, version); err != nil {
 			errlog.Println("Error:", err)
