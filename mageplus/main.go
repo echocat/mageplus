@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	mio "github.com/echocat/mageplus/io"
+	"github.com/echocat/mageplus/sdk"
 	"github.com/echocat/mageplus/wrapper"
 	"github.com/joho/godotenv"
 	"github.com/magefile/mage/mage"
@@ -36,6 +37,11 @@ var (
 
 	initOutput = template.Must(template.New("").Parse(mageTpl))
 )
+
+type Invocation struct {
+	mage.Invocation
+	EnsureSdk bool // If true SDK will be ensured and on demand downloaded
+}
 
 // Main is the entrypoint for running mage.  It exists external to mage's main
 // function to allow it to be used from other programs, specifically so you can
@@ -109,17 +115,43 @@ func ParseAndRun(stdout, stderr io.Writer, stdin io.Reader, args []string) int {
 		out.Println(inv.CacheDir, "cleaned")
 		return 0
 	case mage.CompileStatic:
-		return mage.Invoke(inv)
+		if err := EnsureSdkIfRequired(inv); err != nil {
+			errlog.Println("Error:", err)
+			return 1
+		}
+		return mage.Invoke(inv.Invocation)
 	case mage.None:
-		return mage.Invoke(inv)
+		if err := EnsureSdkIfRequired(inv); err != nil {
+			errlog.Println("Error:", err)
+			return 1
+		}
+		return mage.Invoke(inv.Invocation)
 	default:
 		panic(fmt.Errorf("unknown command type: %v", cmd))
 	}
 }
 
+func EnsureSdkIfRequired(inv Invocation) error {
+	if !inv.EnsureSdk {
+		return nil
+	}
+	s, err := sdk.Discover()
+	if err != nil {
+		return err
+	}
+	if err := os.Setenv("GOROOT", s.Root); err != nil {
+		return err
+	}
+	path := os.Getenv("PATH")
+	if err := os.Setenv("PATH", fmt.Sprintf("%s%c%s", filepath.Dir(s.GoBinary), os.PathListSeparator, path)); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Parse parses the given args and returns structured data.  If parse returns
 // flag.ErrHelp, the calling process should exit with code 0.
-func Parse(stderr, stdout io.Writer, args []string) (inv mage.Invocation, cmd mage.Command, err error) {
+func Parse(stderr, stdout io.Writer, args []string) (inv Invocation, cmd mage.Command, err error) {
 	inv.Stdout = stdout
 	fs := flag.FlagSet{}
 	fs.SetOutput(stdout)
@@ -128,6 +160,7 @@ func Parse(stderr, stdout io.Writer, args []string) (inv mage.Invocation, cmd ma
 
 	fs.BoolVar(&inv.Force, "f", false, "force recreation of compiled magefile")
 	fs.BoolVar(&inv.Debug, "debug", mg.Debug(), "turn on debug messages")
+	fs.BoolVar(&inv.EnsureSdk, "ensuresdk", true, "will ensure a working golang SDK")
 	fs.BoolVar(&inv.Verbose, "v", mg.Verbose(), "show verbose output when running mage targets")
 	fs.BoolVar(&inv.Help, "h", false, "show this help")
 	fs.DurationVar(&inv.Timeout, "t", 0, "timeout in duration parsable format (e.g. 5m30s)")
@@ -158,29 +191,30 @@ mageplus [options] [target]
 MagePlus is a make-like command runner.  See https://github.com/echocat/mageplus for full docs.
 
 Commands:
-  -clean    clean out old generated binaries from CACHE_DIR
+  -clean     clean out old generated binaries from CACHE_DIR
   -compile <string>
-            output a static binary to the given path
-  -init     create a starting template if no mage files exist
-  -wrapper  ensures a wrapper with the version of this mageplus binary
-  -l        list mage targets in this directory
-  -h        show this help
-  -version  show version info for the mageplus binary
+             output a static binary to the given path
+  -init      create a starting template if no mage files exist
+  -wrapper   ensures a wrapper with the version of this mageplus binary
+  -l         list mage targets in this directory
+  -h         show this help
+  -version   show version info for the mageplus binary
 
 Options:
   -d <string> 
-            run magefiles in the given directory (default ".")
-  -debug    turn on debug messages
-  -h        show description of a target
-  -f        force recreation of compiled magefile
-  -keep     keep intermediate mage files around after running
+             run magefiles in the given directory (default ".")
+  -debug     turn on debug messages
+  -ensuresdk will ensure a working golang SDK (default: true)
+  -h         show description of a target
+  -f         force recreation of compiled magefile
+  -keep      keep intermediate mage files around after running
   -gocmd <string>
-		    use the given go binary to compile the output (default: "go")
-  -goos     sets the GOOS for the binary created by -compile (default: current OS)
-  -goarch   sets the GOARCH for the binary created by -compile (default: current arch)
+		     use the given go binary to compile the output (default: "go")
+  -goos      sets the GOOS for the binary created by -compile (default: current OS)
+  -goarch    sets the GOARCH for the binary created by -compile (default: current arch)
   -t <string>
-            timeout in duration parsable format (e.g. 5m30s)
-  -v        show verbose output when running mage targets
+             timeout in duration parsable format (e.g. 5m30s)
+  -v         show verbose output when running mage targets
 `[1:])
 	}
 	err = fs.Parse(args)
