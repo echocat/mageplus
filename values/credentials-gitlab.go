@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	mhttp "github.com/echocat/mageplus/http"
-	"log"
 	"net/http"
 	"os"
 )
@@ -41,7 +40,7 @@ func GetGitLabCredentials() (GitLabCredentials, error) {
 func MustGetGitLabCredentials() GitLabCredentials {
 	v, err := GetGitLabCredentials()
 	if err != nil {
-		log.Fatalln("Error:", err)
+		errorLog.Fatalln("Error:", err)
 	}
 	return v
 }
