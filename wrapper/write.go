@@ -21,9 +21,9 @@ func Write(targetDir string, version string) error {
 	windowsScriptFile := filepath.Join(targetDir, "mageplusw.cmd")
 	if unixScriptFileExists, err := exists(unixScriptFile); err != nil {
 		return err
-	} else if err := writeFile(unixScriptFile, unixScript, version, 0755); err != nil {
+	} else if err := writeFile(unixScriptFile, unixScript, version, false, 0755); err != nil {
 		return err
-	} else if err := writeFile(windowsScriptFile, windowsScript, version, 0644); err != nil {
+	} else if err := writeFile(windowsScriptFile, windowsScript, version, true, 0644); err != nil {
 		return err
 	} else {
 		if unixScriptFileExists {
@@ -33,8 +33,8 @@ func Write(targetDir string, version string) error {
 	}
 }
 
-func writeFile(target string, rawBase64EncodedContent string, version string, perm os.FileMode) error {
-	if content, err := prepareContent(rawBase64EncodedContent, version); err != nil {
+func writeFile(target string, rawBase64EncodedContent string, version string, crlf bool, perm os.FileMode) error {
+	if content, err := prepareContent(rawBase64EncodedContent, version, crlf); err != nil {
 		return err
 	} else if err := createDirectorsForFileIfRequired(target); err != nil {
 		return err
@@ -47,11 +47,15 @@ func writeFile(target string, rawBase64EncodedContent string, version string, pe
 	}
 }
 
-func prepareContent(rawBase64EncodedContent string, version string) ([]byte, error) {
+func prepareContent(rawBase64EncodedContent string, version string, crlf bool) ([]byte, error) {
 	if b, err := base64.RawURLEncoding.DecodeString(rawBase64EncodedContent); err != nil {
 		return nil, err
 	} else {
-		return []byte(strings.Replace(string(b), "####VERSION####", version, -1)), nil
+		content := strings.Replace(string(b), "####VERSION####", version, -1)
+		if crlf {
+			content = strings.ReplaceAll(content, "\n", "\r\n")
+		}
+		return []byte(content), nil
 	}
 }
 

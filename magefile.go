@@ -6,6 +6,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -153,13 +154,25 @@ func GenerateWrapperSources() error {
 	if err != nil {
 		return err
 	}
+	wcf = []byte(strings.ReplaceAll(string(wcf), "\r\n", "\n"))
 
-	if err := ioutil.WriteFile("wrapper/resources.go", []byte(fmt.Sprintf("package wrapper\n\n"+
+	currentContent, err := ioutil.ReadFile("wrapper/resources.go")
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	newContent := []byte(fmt.Sprintf("package wrapper\n\n"+
 		"func init() {\n"+
 		"\tunixScript = `%s`\n"+
 		"\twindowsScript = `%s`\n"+
 		"}\n", string(wf), string(wcf),
-	)), 0644); err != nil {
+	))
+	if bytes.Equal(currentContent, newContent) {
+		return nil
+	}
+	errLog.Printf("%v, %v", len(currentContent), len(newContent))
+
+	if err := ioutil.WriteFile("wrapper/resources.go", newContent, 0644); err != nil {
 		return err
 	}
 
